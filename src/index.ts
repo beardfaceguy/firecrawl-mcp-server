@@ -2122,6 +2122,11 @@ function buildFormatsArray(
       const queryOpts = args.queryOptions as
         Record<string, unknown> | undefined;
       result.push({ type: 'query', ...queryOpts });
+    } else if (fmt === 'knowledgeGraph') {
+      const kgOpts = args.knowledgeGraphOptions as
+        | Record<string, unknown>
+        | undefined;
+      result.push({ type: 'knowledgeGraph', ...kgOpts });
     } else if (fmt === 'screenshot' && args.screenshotOptions) {
       const ssOpts = args.screenshotOptions as Record<string, unknown>;
       result.push({ type: 'screenshot', ...ssOpts });
@@ -2175,6 +2180,7 @@ function transformScrapeParams(
 
   delete out.jsonOptions;
   delete out.queryOptions;
+  delete out.knowledgeGraphOptions;
   delete out.screenshotOptions;
   delete out.pdfOptions;
 
@@ -2196,6 +2202,7 @@ const scrapeParamsSchema = z.object({
         'branding',
         'json',
         'query',
+        'knowledgeGraph',
         'audio',
       ])
     )
@@ -2210,6 +2217,11 @@ const scrapeParamsSchema = z.object({
     .object({
       prompt: z.string().max(10000),
       mode: z.enum(['directQuote', 'freeform']).default('freeform'),
+    })
+    .optional(),
+  knowledgeGraphOptions: z
+    .object({
+      entityTypes: z.array(z.string()).max(50).optional(),
     })
     .optional(),
   screenshotOptions: z
@@ -2747,7 +2759,7 @@ const scrapeTool: RegisteredTool = {
     destructiveHint: false, // Does not modify, delete, or write to external websites.
   },
   description: `
-Scrape one URL and return its content: markdown by default, or HTML, links, screenshots, branding data, a targeted answer, or JSON matching a supplied schema. Use it when the request identifies a page and needs its content or defined fields. Use \`firecrawl_search\` when additional web sources are needed; on an authenticated session, \`firecrawl_map\` lists a site's URLs and \`firecrawl_crawl\` collects a set of pages.
+Scrape one URL and return its content: markdown by default, or HTML, links, screenshots, branding data, a knowledge graph, a targeted answer, or JSON matching a supplied schema. Request \`formats: ["knowledgeGraph"]\` to extract entities and relationships; optionally set \`knowledgeGraphOptions.entityTypes\` (max 50). This structured graph is LLM-generated and is not a fact-verified database. Use it when the request identifies a page and needs its content or defined fields. Use \`firecrawl_search\` when additional web sources are needed; on an authenticated session, \`firecrawl_map\` lists a site's URLs and \`firecrawl_crawl\` collects a set of pages.
 
 Firecrawl may serve recently indexed content; set \`maxAge: 0\` for a live fetch or a smaller \`maxAge\` to bound staleness. A successful response does not by itself confirm the page is still current. ${SAFE_MODE ? 'A named browser profile loads saved session data without saving changes to it.' : 'Browser actions can change the live page when interactive actions are enabled.'} Authenticated responses can include a \`metadata.scrapeId\` for optional scrape feedback.
 
