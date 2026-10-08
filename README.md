@@ -456,6 +456,10 @@ Scrape content from a single URL with advanced options.
 
 **Branding format:** Extracts comprehensive brand identity (colors, fonts, typography, spacing, logo, UI components) for design analysis or style replication.
 **Knowledge graph format (KG-enabled API fork required):** Set `formats: ["knowledgeGraph"]` to return nodes and directed relationships from a page. Optionally set `knowledgeGraphOptions: { "entityTypes": ["Person", "Organization"] }` to restrict the node types (up to 50). The graph is LLM-generated, not fact-verified. The full-surface search tool accepts the same options inside `scrapeOptions` and returns per-result and merged graphs (the hosted search-only surface does not expose search `scrapeOptions`); crawl accepts them inside `scrapeOptions` and returns a graph per document. Standard hosted Firecrawl may reject this fork-only format until the API feature is upstreamed.
+**Current use — candidate graph:** Treat the entities and relationships as leads for retrieval and review, not as verified facts. Before answering from an edge, check the source page; duplicate aliases and reversed or unsupported relationships can occur.
+
+**Proposed phase 2 (not implemented):** Ground each edge with a source URL and supporting passage, then validate high-impact relationships before presenting a graph as evidence. The current API does not provide edge-level citations or a reusable site template.
+
 **Privacy:** Set `redactPII: true` to return content with personally identifiable information redacted.
 **Hosted server:** On the hosted server (`CLOUD_SERVICE=true`) scrape is read-only. It takes no browser `actions` and cannot accept provider terms. A named `profile` loads saved browser state without saving changes to it, and the full endpoint's `firecrawl_search` treats `scrapeOptions.profile` the same way. To save browser state to a profile, open the page with `firecrawl_interact` (see below). An organization admin accepts terms in the dashboard.
 
